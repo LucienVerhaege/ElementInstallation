@@ -1,0 +1,260 @@
+<h1 id="rapport">Rapport</h1>
+<h2 id="auteurs">Auteurs</h2>
+<p><strong>Verhaege Lucien</strong></p>
+<p><strong>Milan Delzenne</strong></p>
+<h2 id="un-peu-de-vocabulaire">Un peu de vocabulaire</h2>
+<p><strong>phys</strong>: représente la machine physique.</p>
+<p><strong>virtu</strong>: représente la machine de virtualisation.</p>
+<p><strong>vm</strong>: représente la machine virtuelle.</p>
+<p><strong>vm-ip</strong>: l’adresse IP de la machine virtuelle.</p>
+<p><strong>login</strong>: notre identifiant sur le réseau.</p>
+<p><strong>root</strong>: l’utilisateur root (logique), en opposition
+à…</p>
+<p><strong>…user</strong>: l’utilisateur non root de la machine
+virtuelle.</p>
+<h1 id="partie-1">Partie 1</h1>
+<h2 id="se-connecter-à-la-machine-de-virtualisation-avec-ssh">1. Se
+connecter à la machine de virtualisation avec ssh</h2>
+<p>La machine physique sur laquelle on travaille n’est pas la même que
+la machine de virtualisation qui nous a été attribuée. Pour s’y
+connecter, on effectue la commande ssh comme suit:</p>
+<pre><code>login@phys$ ssh virtu.iutinfo.fr</code></pre>
+<p><strong>Attention</strong>, si c’est la première fois qu’on essaie de
+se connecter à cette machine en ssh, on aura un message similaire à ce
+qui suit:</p>
+<pre><code>The authenticity of host &#39;teck03.iutinfo.fr (172.18.48.223)&#39; can&#39;t be established.
+ED25519 key fingerprint is SHA256:sefLeWVX2+oaIsGPjmgMhGfaQNF6UmGOAxJD4TBGnEI.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])?</code></pre>
+<p>Dans ce cas, il est <strong>primordial</strong> de vérifier que
+l’empreinte indiquée par le terminal correspond bien à celle fournie par
+l’administrateur système.</p>
+<p>Le terminal demande ensuite un mot de passe qu’il faudra donner à
+chaque fois qu’on essaiera de se connecter en ssh à cette machine.</p>
+<h2 id="faciliter-la-connexion">2. Faciliter la connexion</h2>
+<p>Il est possible de faciliter la connexion ssh en créant et utilisant
+une paire de clés: une clé <em>publique</em>, partagée sur le réseau
+ssh, et une clé <em>privée</em>, connue uniquement par celui qui l’a
+créée.</p>
+<p>Deux étapes sont nécessaires pour leur utilisation.</p>
+<h3 id="créer-les-clés">2.1 Créer les clés</h3>
+<p>Il faut d’abord créer les clés, ce qui se fait grâce à la
+commande:</p>
+<pre><code>login@phys$ ssh-keygen</code></pre>
+<p>Il est possible de choisir où cette clé sera enregistrée sur notre
+machine, par défaut elle est enregistrée sous
+<code>/home/infoetu/login/.ssh/id_rsa</code>.</p>
+<h3 id="partager-la-clé-publique">2.2 Partager la clé publique</h3>
+<p>Il faut ensuite partager la clé publique sur le serveur. Pour ce
+faire, on utilise la commande:</p>
+<pre><code>login@phys$ ssh-copy-id -i .ssh/id_rsa.pub login@virtu</code></pre>
+<h2 id="créer-et-gérer-des-machines-virtuelles">3. Créer et gérer des
+machines virtuelles</h2>
+<p>Nous allons voir comment gérer les machines virtuelles. Pour cela,
+nous allons utiliser un script nommé <code>vmiut</code> sur la machine
+de virtualisation. Pour pouvoir l’utiliser, il faut
+<strong>impérativement</strong> commencer par utiliser la commande
+suivante:</p>
+<pre><code>login@virtu$ source /home/public/vm/vm.env</code></pre>
+<h3 id="créer-et-supprimer-une-machine-virtuelle">3.1 Créer et supprimer
+une machine virtuelle</h3>
+<p>Pour créer la machine virtuelle <code>vm</code>:</p>
+<pre><code>login@virtu$ vmiut creer vm</code></pre>
+<p>Pour la supprimer:</p>
+<pre><code>login@virtu$ vmiut supprimer vm</code></pre>
+<h3 id="lister-les-machines-virtuelles">3.2 Lister les machines
+virtuelles</h3>
+<p>Pour lister les machines virtuelles présentes sur la machine de
+virtualisation:</p>
+<pre><code>login@virtu$ vmiut lister</code></pre>
+<h3 id="démarrer-et-arrêter-une-machine-virtuelle">3.3 Démarrer et
+arrêter une machine virtuelle</h3>
+<p>Pour démarrer la machine virtuelle <code>vm</code>:</p>
+<pre><code>login@virtu$ vmiut demarrer vm</code></pre>
+<p>Pour l’arrêter (<strong>attention</strong>, à faire à chaque fois
+qu’on a fini de l’utiliser):</p>
+<pre><code>login@virtu$ vmiut arreter vm</code></pre>
+<h3 id="obtenir-des-informations-sur-la-machine-virtuelle">3.4 Obtenir
+des informations sur la machine virtuelle</h3>
+<p>Pour ce faire:</p>
+<pre><code>login@virtu$ vmiut info vm</code></pre>
+<h3 id="se-connecter-à-la-machine-virtuelle">3.5 Se connecter à la
+machine virtuelle</h3>
+<p>2 possibilités:</p>
+<h4 id="console-virtuelle">3.5.1 Console virtuelle</h4>
+<p>Depuis la machine physique:</p>
+<pre><code>login@phys$ ssh -X frene20</code></pre>
+<p>Puis, une fois sur la machine de virtualisation:</p>
+<pre><code>login@virtu$ vmiut console vm</code></pre>
+<h4 id="connexion-en-ssh">3.5.2 Connexion en ssh</h4>
+<p>Depuis la machine de virtualisation:</p>
+<pre><code>login@virtu$ ssh user@vm-ip</code></pre>
+<p>On peut obtenir <code>vm-ip</code> avec <code>vmiut info vm</code>,
+voir “<strong>3.4 Obtenir des informations sur la machine
+virtuelle</strong>”.</p>
+<hr />
+<p>Il est préférable que la machine virtuelle ait une adresse IP
+statique. Pour ce faire, on se commence par se connecter à la machine
+virtuelle en tant que root (nom d’utilisateur: <em>root</em> / mot de
+passe: <em>root</em>).</p>
+<p>Avant tout changement, on doit couper l’interface réseau:</p>
+<pre><code>root@vm# ifdown enp0s3</code></pre>
+<p>Ensuite, on ouvre le fichier <code>interfaces</code>. C’est ce
+fichier qu’on va modifier pour assigner une adresse IP statique à notre
+machine virtuelle et au routeur.</p>
+<pre><code>root@vm# nano /etc/network/interfaces</code></pre>
+<p>Dans ce fichier, on supprime le <code>dhcp</code> présent sur la
+dernière ligne et on le remplace par:</p>
+<pre><code> iface enp0s3 inet static
+    address 192.168.194.3/24
+    gateway 192.168.194.2</code></pre>
+<p>Ensuite, pour assigner une adresse statique au serveur DNS, on ouvre
+le fichier <code>resolv.conf</code> comme suit:</p>
+<pre><code>root@vm# nano /etc/resolv.conf</code></pre>
+<p>Et on écrit sur la dernière ligne:</p>
+<pre><code>nameserver 192.168.194.2</code></pre>
+<p>On peut vérifier les adresses avec les commandes:</p>
+<ol type="1">
+<li><p><code>root@vm# ifup enp0s3</code> pour rallumer
+l’interface</p></li>
+<li><p><code>root@vm# ip addr show</code></p></li>
+<li><p><code>root@vm# ip route show</code></p></li>
+<li><p><code>root@vm# reboot</code> pour vérifier que les modifications
+persistent après un redémarrage de la machine virtuelle.</p></li>
+</ol>
+<h2 id="configurer-et-mettre-à-jour-la-machine-virtuelle">4. Configurer
+et mettre à jour la machine virtuelle</h2>
+<h3 id="connexion-root-en-ssh">4.1 Connexion root en ssh</h3>
+<p>Pour se connecter en root sur la machine virtuelle via ssh, deux
+étapes. D’abord, se connecter en ssh à la machine virtuelle sur
+user:</p>
+<pre><code>login@virtu ssh user@vm-ip</code></pre>
+<p>Puis, on utilise la commande <code>su</code> pour passer sur
+root:</p>
+<pre><code>user@vm# su -l root</code></pre>
+<h3 id="accès-extérieur-pour-la-machine-virtuelle">4.2 Accès extérieur
+pour la machine virtuelle</h3>
+<p>Pour pouvoir accéder au web depuis la machine virtuelle, on commence
+par se connecter en <strong>root</strong>.</p>
+<p>Ensuite, on effectue la commande suivante:</p>
+<pre><code>root@vm# nano /etc/environnement</code></pre>
+<p>Dans le fichier ainsi ouvert, on ajoute:</p>
+<pre><code>HTTP_PROXY=http://cache.univ-lille.fr:3128
+HTTPS_PROXY=http://cache.univ-lille.fr:3128
+http_proxy=http://cache.univ-lille.fr:3128
+https_proxy=http://cache.univ-lille.fr:3128
+NO_PROXY=localhost,192.168.194.0/24,172.18.48.0/22</code></pre>
+<h3 id="mise-à-jour-de-la-machine-virtuelle">4.3 Mise à jour de la
+machine virtuelle</h3>
+<p>Pour mettre à jour la machine virtuelle, effectuer depuis root:</p>
+<pre><code>root@vm# apt update &amp;&amp; apt full-upgrade</code></pre>
+<h2 id="installation-doutils">5. Installation d’outils</h2>
+<p>Pour installer des logiciels:</p>
+<pre><code>root@vm# apt nom-logiciel</code></pre>
+<p>…où <code>nom-logiciel</code> est le nom du logiciel à installer.</p>
+<h2 id="création-dalias">6. Création d’alias</h2>
+<p>Pour rendre plus simple et plus rapide la connexion ssh à la machine
+virtuelle, on peut créer des alias sur la machine physique.</p>
+<p>Pour ce faire: commencer par ouvrir <code>config</code> depuis la
+machine physique.</p>
+<pre><code>login@phys$ nano .ssh/config</code></pre>
+<p>Dans le fichier ainsi ouvert, ajouter:</p>
+<pre><code>Host virt
+        HostName virtu.iutinfo.fr
+        User login
+
+Host vm
+        User user
+        HostName 192.168.194.3
+
+Host vmjump
+        User user
+        HostName 192.168.194.3
+        Proxyjump virt</code></pre>
+<p><strong>Attention</strong>: on n’oublie pas d’effectuer la
+commande</p>
+<pre><code>login@virtu$ ssh-copy-id -i .ssh/id_rsa.pub user@192.168.194.3</code></pre>
+<p>depuis la machine de virtualisation (voir “<strong>2. Faciliter la
+connexion</strong>” pour plus d’informations).</p>
+<p>Grâce à cette manipulation, il suffira d’écrire, sur la machine
+physique, la commande:</p>
+<pre><code>login@phys$ ssh virt</code></pre>
+<p>pour se connecter en ssh à la machine de virtualisation, et:</p>
+<pre><code>login@phys$ ssh vm</code></pre>
+<p>pour se connecter en ssh à la machine virtuelle sur user.</p>
+<h1 id="partie-2">Partie 2</h1>
+<h2 id="changer-le-nom-dune-machine">Changer le nom d’une machine</h2>
+<p>Pour changer le nom d’une machine il faut modifier le fichier
+/etc/hostname en mettant le nom voulu dedans.</p>
+<p>Pour changer le nom du localhost en le nom de votre machine, il faut
+associer le nom voulu et l’adresse IP de la manière suivante dans le
+fichier /etc/hosts (par exemple si on veut changer le localhost en
+matrix):</p>
+<pre><code>127.0.0.1 matrix</code></pre>
+<h2 id="installer-et-utiliser-sudo">Installer et utiliser sudo</h2>
+<p>La commande sudo permet d’exécuter des commandes en tant que
+root.</p>
+<p>Pour installer sudo :</p>
+<pre><code>root@vm# apt install sudo</code></pre>
+<p>Pour permettre à un user d’utiliser la commande root :</p>
+<pre><code>root@vm# usermod -aG sudo user</code></pre>
+<h2 id="configurer-la-synchronisation-de-lhorloge">Configurer la
+synchronisation de l’horloge</h2>
+<p>Afin de vérifier les évènements système du protocole NTP qui permet
+de synchroniser l’horloge, on peut utiliser la commande :</p>
+<pre><code>root@vm# journalctl -u systemd-timesyncd</code></pre>
+<p>Pour configurer l’horloge de la machine avec un serveur ntp, il faut
+accéder au fichier /etc/systemd/timesyncd.conf et le modifier ainsi
+:</p>
+<pre><code>NTP=ntp.univ-lille.fr</code></pre>
+<p>Il faudra ensuite redémarrer le service timesyncd en faisant la
+commande :</p>
+<pre><code>root@vm# systemctl restart systemd-timesyncd.service</code></pre>
+<p>Si la configuration ne fonctionne toujours pas lorsqu’on tape la
+commande :</p>
+<pre><code>root@vm# timedatectl status</code></pre>
+<p>On active la synchronisation ntp à l’aide de la commande :</p>
+<pre><code>root@vm# timedatectl set-ntp true</code></pre>
+<p><strong>Ne pas oublier de redémarrer le service timesyncd une fois
+l’opération effectuée</strong></p>
+<h2 id="mise-en-place-dun-serveur-postegresql">Mise en place d’un
+serveur postegresql</h2>
+<p>Pour l’installer :</p>
+<pre><code>root@vm# apt install postgresql</code></pre>
+<p>On s’assure que le service de postgresql est bien démarré avec la
+commande :</p>
+<pre><code>root@vm# sudo /etc/init.d/postgresql restart</code></pre>
+<p>Pour faire des actions sur la base de données en tant
+qu’administrateur, il faut se connecter sur l’utilisateur postgres :</p>
+<pre><code>root@vm# su -l postgres</code></pre>
+<p>On crée ensuite un nouvel utilisateur (ici il sera superuser et on
+initialisera directement le mot de passe) :</p>
+<pre><code>postgres@vm$ createuser -P -s -e user</code></pre>
+<p>On crée ensuite une nouvelle base de donnée (ici le propriétaire de
+la base est spécifié dans la commande avec l’option “-O”) :</p>
+<pre><code>postgres@vm$ createdb -O user dbname</code></pre>
+<p>Pour se connecter à la base de données une fois qu’elle a été créée,
+il faut taper la commande suivante (ici on suppose que l’utilisateur
+avec lequel on veut se connecter à la base de données s’appelle user et
+que le nom de la base de données est dbname):</p>
+<pre><code>user@vm$ psql -h localhost -U user dbname</code></pre>
+<p>Vous pouvez maintenant utiliser posqtgresql normalement et gérer
+votre base de données.</p>
+<h3
+id="voici-un-rappel-des-quelques-commandes-importantes-en-sql.">Voici un
+rappel des quelques commandes importantes en sql.</h3>
+<ul>
+<li>Créer une nouvelle table (ici on créé une table name contenant une
+colonne column de type text):</li>
+</ul>
+<pre><code>    create table name(column text);</code></pre>
+<ul>
+<li>Insérer des données dans une table (ici on insère une ligne
+contenant un mot word dans la table name créée plus haut):</li>
+</ul>
+<pre><code>    insert into name values(&#39;word&#39;);</code></pre>
+<ul>
+<li>Faire une requête simple (ici on affiche toutes les entrées de la
+table name créée plus haut):</li>
+</ul>
+<pre><code>    select * from name;</code></pre>
